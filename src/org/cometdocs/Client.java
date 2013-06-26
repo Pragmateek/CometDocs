@@ -48,10 +48,10 @@ public class Client
         {
         	if (response.getStatus() == Status.InvalidToken)
         	{
-        		throw new InvalidTokenException(response.getMessage(), response.getStatus());
+        		throw new InvalidTokenException(response.getMessage(), response.getStatus(), response.getError());
         	}
         	
-            throw new CometDocsException(String.format("Unexpected return status %s with message '%s'", response.getStatus(), response.getMessage()), response.getStatus());
+            throw new CometDocsException(response.getMessage(), response.getStatus(), response.getError());
         }
     }
 
@@ -433,7 +433,7 @@ public class Client
     {
     	List<NameValuePair> params = new ArrayList<NameValuePair>(4);
         params.add(new BasicNameValuePair("token", token.getValue()));
-        if (folder != null) params.add(new BasicNameValuePair("id", String.valueOf(folder.getID())));
+        if (folder != null) params.add(new BasicNameValuePair("folderId", String.valueOf(folder.getID())));
         if (recursive != null) params.add(new BasicNameValuePair("recursive", recursive ? "1" : "0"));
     	    	
     	HttpPost post = new HttpPost(APIRoot + "getFolder");
@@ -583,7 +583,7 @@ public class Client
     	return uploadFile(token, file, name, null);
     }
     
-    public FileInfo uploadFile(AuthenticationToken token, InputStream file, String name, Integer folderId) throws Exception
+    public FileInfo uploadFile(AuthenticationToken token, InputStream file, String name, Long folderId) throws Exception
     {
 		byte[] fileContent = getBytes(file);
 
@@ -612,7 +612,7 @@ public class Client
     	return uploadFile(token, file, null);
     }
     
-    public FileInfo uploadFile(AuthenticationToken token, String file, Integer folderId) throws Exception
+    public FileInfo uploadFile(AuthenticationToken token, String file, Long folderId) throws Exception
     {
         String name = new File(file).getName();
 
@@ -623,14 +623,19 @@ public class Client
 
     public FileInfo uploadFile(AuthenticationToken token, File file) throws Exception
     {
-    	return uploadFile(token, file, null);
+    	return uploadFile(token, file, (Long)null);
     }
     
-    public FileInfo uploadFile(AuthenticationToken token, File file, Integer folderId) throws Exception
+    public FileInfo uploadFile(AuthenticationToken token, File file, Long folderId) throws Exception
     {
         InputStream stream = new ByteArrayInputStream(file.getContent());
         
         return uploadFile(token, stream, file.getName() + "." + file.getExtension(), folderId);
+    }
+    
+    public FileInfo uploadFile(AuthenticationToken token, File file, FolderInfo folder) throws Exception
+    {
+        return uploadFile(token, file, folder.getID());
     }
     
     public FileInfo uploadFileFromUrl(AuthenticationToken token, String url) throws Exception
@@ -643,12 +648,17 @@ public class Client
     	return uploadFileFromUrl(token, url, name, null);
     }
     
-    public FileInfo uploadFileFromUrl(AuthenticationToken token, String url, Integer folderId) throws Exception
+    public FileInfo uploadFileFromUrl(AuthenticationToken token, String url, Long folderId) throws Exception
     {
     	return uploadFileFromUrl(token, url, null, folderId);
     }    
     
-    public FileInfo uploadFileFromUrl(AuthenticationToken token, String url, String name, Integer folderId) throws Exception
+    public FileInfo uploadFileFromUrl(AuthenticationToken token, String url, FolderInfo folder) throws Exception
+    {
+        return uploadFileFromUrl(token, url, null, folder.getID());
+    }
+    
+    public FileInfo uploadFileFromUrl(AuthenticationToken token, String url, String name, Long folderId) throws Exception
     {
     	List<NameValuePair> params = new ArrayList<NameValuePair>(4);
         params.add(new BasicNameValuePair("token", token.getValue()));

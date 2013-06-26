@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +19,6 @@ import org.apache.http.util.EntityUtils;
 import org.cometdocs.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ClientTests {
 
@@ -32,9 +33,40 @@ public class ClientTests {
     private static Client client = null;
     private static AuthenticationToken authToken = null;
 
+    /**
+     * Read the testing credentials from "credentials.txt" file.
+     */
+    private static void readCredentials() throws Exception
+    {
+        if (!Files.exists(Paths.get("bin/org/cometdocs/tests/credentials.txt")))
+        {
+            throw new Exception("The file 'credentials.txt' has not been found!\n" +
+                                "You must provide some credentials to use the CometDocs API.\n" +
+                                "Copy or rename the 'credentials.sample.txt' file and fill in your email, CometDocs password, CometDocs API key and testing folder name.");
+        }
+
+        String credentials = new String(Files.readAllBytes(Paths.get("bin/org/cometdocs/tests/credentials.txt")));
+
+        String lineEnding = credentials.contains("\r\n") ? "\r\n" : "\n";
+
+        String[] tokens = credentials.split(lineEnding);
+
+        if (tokens.length != 4)
+        {
+            throw new Exception("You must provide exactly, and in the same order, your: email, password, API key and the tests folder!");
+        }
+
+        userEMail = tokens[0];
+        userPassword = tokens[1];
+        userAPIKey = tokens[2];
+        testFolderName = tokens[3];
+    }
+    
     @BeforeClass
     public static void testFixtureSetUp() throws Exception
     {
+    	readCredentials();
+    	
         client = new Client();
         
         canAuthenticate();
@@ -58,22 +90,22 @@ public class ClientTests {
     
     private void assertClean() throws Exception
     {
-        Folder root = client.getFolder(authToken);
+        Folder testFolder = client.getFolder(authToken, testFolderInfo);
 
-        for (FileInfo file : root.getFiles())
+        for (FileInfo file : testFolder.getFiles())
         {
         	client.deleteFile(authToken, file);
         }
         
-        for (FolderInfo folder : root.getFolders())
+        for (FolderInfo folder : testFolder.getFolders())
         {
         	client.deleteFolder(authToken, folder);
         }
 
-        root = client.getFolder(authToken);
+        testFolder = client.getFolder(authToken, testFolderInfo);
 
-        assertEquals(0, root.getFiles().length);
-        assertEquals(0, root.getFolders().length);
+        assertEquals(0, testFolder.getFiles().length);
+        assertEquals(0, testFolder.getFolders().length);
     }
     
 	public static void canAuthenticate() throws Exception
@@ -91,14 +123,14 @@ public class ClientTests {
         File file = new File("a.txt");
         file.setContent("ABC".getBytes(charset));
 
-        FileInfo fileInfo = client.uploadFile(authToken, file);
+        FileInfo fileInfo = client.uploadFile(authToken, file, testFolderInfo);
 
-        Folder root = client.getFolder(authToken);
+        Folder testFolder = client.getFolder(authToken, testFolderInfo);
 
-        assertEquals(1, root.getFiles().length);
-        assertEquals(fileInfo.getId(), root.getFiles()[0].getId());
-        assertEquals(fileInfo.getName(), root.getFiles()[0].getName());
-        assertEquals(fileInfo.getExtension(), root.getFiles()[0].getExtension());
+        assertEquals(1, testFolder.getFiles().length);
+        assertEquals(fileInfo.getId(), testFolder.getFiles()[0].getId());
+        assertEquals(fileInfo.getName(), testFolder.getFiles()[0].getName());
+        assertEquals(fileInfo.getExtension(), testFolder.getFiles()[0].getExtension());
 
         ConversionType convType = new ConversionType("", "PDF");
 
@@ -106,13 +138,13 @@ public class ClientTests {
 
         // assertTrue(pdfInfo.getExtension().equalsIgnoreCase("pdf"));
 
-        root = client.getFolder(authToken);
+        testFolder = client.getFolder(authToken, testFolderInfo);
 
-        assertEquals(1, root.getFiles().length);
+        assertEquals(1, testFolder.getFiles().length);
 
-        assertEquals(fileInfo.getId(), root.getFiles()[0].getId());
-        assertEquals(fileInfo.getName(), root.getFiles()[0].getName());
-        assertEquals(fileInfo.getExtension(), root.getFiles()[0].getExtension());
+        assertEquals(fileInfo.getId(), testFolder.getFiles()[0].getId());
+        assertEquals(fileInfo.getName(), testFolder.getFiles()[0].getName());
+        assertEquals(fileInfo.getExtension(), testFolder.getFiles()[0].getExtension());
 
         Conversion[] conversions = client.getConversions(authToken, fileInfo);
 
@@ -148,18 +180,18 @@ public class ClientTests {
     {
     	assertClean();
 
-    	Folder root = client.getFolder(authToken);
+    	Folder testFolder = client.getFolder(authToken, testFolderInfo);
     	
     	String name = "__testFolder";
     	
-    	FolderInfo newFolder = client.createFolder(authToken, root, name);
+    	FolderInfo newFolder = client.createFolder(authToken, testFolder, name);
     	
     	assertTrue(newFolder.getName().equals(name));
     	
-    	root = client.getFolder(authToken);
+    	testFolder = client.getFolder(authToken, testFolderInfo);
     	
     	Folder match = null;
-    	for (Folder f : root.getFolders())
+    	for (Folder f : testFolder.getFolders())
     	{
     		if (f.getID() == newFolder.getID())
     		{
@@ -181,19 +213,19 @@ public class ClientTests {
         File file = new File("Test.txt");
         file.setContent(new byte[0]);
 
-        FileInfo info = client.uploadFile(authToken, file);
+        FileInfo info = client.uploadFile(authToken, file, testFolderInfo);
 
-        Folder root = client.getFolder(authToken);
+        Folder testFolder = client.getFolder(authToken, testFolderInfo);
 
-        assertEquals(1, root.getFiles().length);
-        assertEquals(file.getName(), root.getFiles()[0].getName());
-        assertEquals(file.getExtension(), root.getFiles()[0].getExtension());
+        assertEquals(1, testFolder.getFiles().length);
+        assertEquals(file.getName(), testFolder.getFiles()[0].getName());
+        assertEquals(file.getExtension(), testFolder.getFiles()[0].getExtension());
 
         client.deleteFile(authToken, info);
 
-        root = client.getFolder(authToken);
+        testFolder = client.getFolder(authToken, testFolderInfo);
 
-        assertEquals(0, root.getFiles().length);
+        assertEquals(0, testFolder.getFiles().length);
     }
 	
     @Test
@@ -205,25 +237,25 @@ public class ClientTests {
         File file2 = new File("b.txt");
         File file3 = new File("c.txt");
 
-        client.uploadFile(authToken, file1);
-        client.uploadFile(authToken, file2);
-        client.uploadFile(authToken, file3);
+        client.uploadFile(authToken, file1, testFolderInfo);
+        client.uploadFile(authToken, file2, testFolderInfo);
+        client.uploadFile(authToken, file3, testFolderInfo);
 
-        Folder root = client.getFolder(authToken);
+        Folder testFolder = client.getFolder(authToken, testFolderInfo);
 
-        assertNotNull(root.getFolders());
+        assertNotNull(testFolder.getFolders());
 
-        assertNotNull(root.getFiles());
-        assertEquals(3, root.getFiles().length);
+        assertNotNull(testFolder.getFiles());
+        assertEquals(3, testFolder.getFiles().length);
 
-        assertEquals(file1.getName(), root.getFiles()[0].getName());
-        assertEquals(file1.getExtension(), root.getFiles()[0].getExtension());
+        assertEquals(file1.getName(), testFolder.getFiles()[0].getName());
+        assertEquals(file1.getExtension(), testFolder.getFiles()[0].getExtension());
 
-        assertEquals(file2.getName(), root.getFiles()[1].getName());
-        assertEquals(file2.getExtension(), root.getFiles()[1].getExtension());
+        assertEquals(file2.getName(), testFolder.getFiles()[1].getName());
+        assertEquals(file2.getExtension(), testFolder.getFiles()[1].getExtension());
 
-        assertEquals(file3.getName(), root.getFiles()[2].getName());
-        assertEquals(file3.getExtension(), root.getFiles()[2].getExtension());
+        assertEquals(file3.getName(), testFolder.getFiles()[2].getName());
+        assertEquals(file3.getExtension(), testFolder.getFiles()[2].getExtension());
     }
     
     @Test
@@ -361,7 +393,7 @@ public class ClientTests {
         File file = new File("a.txt");
         file.setContent("ABC".getBytes(charset));
 
-        FileInfo fileInfo = client.uploadFile(authToken, file);
+        FileInfo fileInfo = client.uploadFile(authToken, file, testFolderInfo);
 
         client.sendFile(authToken, fileInfo, new String[] { userEMail }, "some.user@company.com", "Hello!");
 
@@ -380,7 +412,7 @@ public class ClientTests {
         File inputFile = new File("Peanuts.txt");
         inputFile.setContent(contentBytes);
 
-        FileInfo info = client.uploadFile(authToken, inputFile);
+        FileInfo info = client.uploadFile(authToken, inputFile, testFolderInfo);
         assertEquals(contentBytes.length, info.getSize());
 
         File outputFile = client.downloadFile(authToken, info);
@@ -397,9 +429,9 @@ public class ClientTests {
 
         String fileUrl = "http://www.imf.org/external/np/res/commod/Table4.pdf";
 
-        client.uploadFileFromUrl(authToken, fileUrl);
+        client.uploadFileFromUrl(authToken, fileUrl, testFolderInfo);
 
-        Folder root = client.getFolder(authToken);
+        Folder root = client.getFolder(authToken, testFolderInfo);
 
         FileInfo info = root.getFiles()[0];
 
