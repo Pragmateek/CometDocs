@@ -38,14 +38,14 @@ public class ClientTests {
      */
     private static void readCredentials() throws Exception
     {
-        if (!Files.exists(Paths.get("bin/org/cometdocs/tests/credentials.txt")))
+        if (!Files.exists(Paths.get("credentials.txt")))
         {
             throw new Exception("The file 'credentials.txt' has not been found!\n" +
                                 "You must provide some credentials to use the CometDocs API.\n" +
                                 "Copy or rename the 'credentials.sample.txt' file and fill in your email, CometDocs password, CometDocs API key and testing folder name.");
         }
 
-        String credentials = new String(Files.readAllBytes(Paths.get("bin/org/cometdocs/tests/credentials.txt")));
+        String credentials = new String(Files.readAllBytes(Paths.get("credentials.txt")));
 
         String lineEnding = credentials.contains("\r\n") ? "\r\n" : "\n";
 
