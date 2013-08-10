@@ -76,6 +76,7 @@ public class Client
     
     public AuthenticationToken authenticate(String username, String password, String key, Integer validity) throws Exception
     {
+    	// Build the parameters bag
     	List<NameValuePair> params = new ArrayList<NameValuePair>(4);
         params.add(new BasicNameValuePair("username", username));
         params.add(new BasicNameValuePair("password", password));
@@ -84,18 +85,24 @@ public class Client
     	{
     		params.add(new BasicNameValuePair("validity", validity.toString()));
     	}
-    	    	
+    	
+    	// Build the HTTP/POST request
     	HttpPost post = new HttpPost(APIRoot + "authenticate");
     	post.setEntity(new UrlEncodedFormEntity(params));
     	
+    	// Send the request and retrieve the response
   	    HttpResponse httpResponse = httpClient.execute(post);
 
+  	    // Interpret the response as text
   	    String json = EntityUtils.toString(httpResponse.getEntity());
   	    
+  	    // Deserialize the response object from JSON 
         AuthenticateResponse response = gson.fromJson(json, AuthenticateResponse.class);
 
+        // Check that there is no error
         checkAndThrow(response);
 
+        // Build and return a new authentication token for the session
         return new AuthenticationToken(response.getToken());
     }
     
