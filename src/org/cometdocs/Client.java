@@ -74,6 +74,16 @@ public class Client
     	return authenticate(username, password, key, null);
     }
     
+    /**
+     * Authenticate to the CometDocs API: https://www.cometdocs.com/developer/apiDocumentation#method-authenticate
+     * 
+     * @param username The CometDocs website username (typically an email address).
+     * @param password The CometDocs website password.
+     * @param key The CometDocs API key (you can create one here: https://www.cometdocs.com/developer/myApps).
+     * @param validity The desired validity of the emitted token.
+     * @return An authentication token to use with subsequent API calls.
+     * @throws Exception
+     */
     public AuthenticationToken authenticate(String username, String password, String key, Integer validity) throws Exception
     {
     	// Build the parameters bag
