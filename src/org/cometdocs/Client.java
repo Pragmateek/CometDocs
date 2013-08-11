@@ -600,10 +600,22 @@ public class Client
     	return uploadFile(token, file, name, null);
     }
     
+    /**
+     * Upload a file from the local file-system to the CometDocs store: https://www.cometdocs.com/developer/apiDocumentation#method-uploadFile
+     * 
+     * @param token A valid authentication token.
+     * @param file A file stream.
+     * @param name The name to give to the uploaded file.
+     * @param folderId The folder in which the file will be uploaded or the root folder if unspecified.
+     * @return A FileInfo instance representing the uploaded file.
+     * @throws Exception
+     */
     public FileInfo uploadFile(AuthenticationToken token, InputStream file, String name, Long folderId) throws Exception
     {
+    	// Read the file content
 		byte[] fileContent = getBytes(file);
 
+		// Build the POST request
         HttpPost post = new HttpPost(APIRoot + "uploadFile");
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("token", new StringBody(token.getValue()));
@@ -614,13 +626,17 @@ public class Client
         entity.addPart("file", new ByteArrayBody(fileContent, name));
         post.setEntity(entity);
         
+        // Send the request and retrieve the response as a JSON string
         HttpResponse httpResponse = httpClient.execute(post);
         String json = EntityUtils.toString(httpResponse.getEntity());
 
+        // Deserialize the response from JSON
         UploadFileResponse response = gson.fromJson(json, UploadFileResponse.class);
 
+        // Check the response
         checkAndThrow(response);
 
+        // Get and returns the object representing the uploaded file
         return response.getFile();
     }
 
