@@ -128,7 +128,7 @@ public class Client
         params.add(new BasicNameValuePair("id", String.valueOf(file.getId())));
         params.add(new BasicNameValuePair("conversionType", conversionType.toString()));
 
-        long nowTimestamp = new Date().getTime() / 1000;
+        // long nowTimestamp = new Date().getTime() / 1000;
         
         HttpPost post = new HttpPost(APIRoot + "convertFile");
     	post.setEntity(new UrlEncodedFormEntity(params));
