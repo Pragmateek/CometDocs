@@ -67,7 +67,7 @@ public class ClientTests {
     {
     	readCredentials();
     	
-        client = new Client();
+        client = ClientFactory.getClient();
         
         canAuthenticate();
 
