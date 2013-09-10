@@ -22,6 +22,37 @@ public class FileInfo
     public Boolean hasConversions() { return hasConversions; }
 	public void hasConversions(Boolean hasConversions) { this.hasConversions = hasConversions; }
 
+	public FileInfo()
+	{
+		this(null);
+	}
+	
+    public FileInfo(String nameWithExtension)
+    {
+        if (nameWithExtension != null)
+        {
+            String[] tokens = nameWithExtension.split("\\.");
+
+            String name;
+            
+            if (tokens.length >= 2)
+            {
+                name = tokens[0];
+                for (int i = 1; i < tokens.length - 1; ++i)
+                {
+                    name += "." + tokens[i];
+                }
+
+                setExtension(tokens[tokens.length - 1]);
+            }
+            else
+            {
+                name = tokens[0];
+            }
+            setName(name);
+        }
+    }
+	
     @Override
     public int hashCode()
     {

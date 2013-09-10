@@ -20,8 +20,8 @@ import org.cometdocs.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ClientTests {
-
+public class ClientTests
+{
     private static String userEMail = null;
     private static String userPassword = null;
     private static String userAPIKey = null;
