@@ -11,4 +11,4 @@ To run the tests you'll need:
 
 Once you've created your account you must create **a folder dedicated to testing** in your store.
 
-The last step is filling the "**credentials.txt**" file with these data; you can simply copy and/or rename the provided template file "**credentials.sample.txt**" replacing the fake data by yours.
+The last step is filling the **"credentials.txt"** file with these data; you can simply copy and/or rename the provided template file **"credentials.sample.txt"** replacing the fake data by yours.
