@@ -10,37 +10,18 @@ public class File extends FileInfo
 		
 		this.content = content;
 	}
-
+	
 	public File()
 	{
-		this(null);
+		super();
+		
+		content = new byte[0];
 	}
 	
-    public File(String nameWithExtension)
-    {
-        if (nameWithExtension != null)
-        {
-            String[] tokens = nameWithExtension.split("\\.");
-
-            String name;
-            
-            if (tokens.length >= 2)
-            {
-                name = tokens[0];
-                for (int i = 1; i < tokens.length - 1; ++i)
-                {
-                    name += "." + tokens[i];
-                }
-
-                setExtension(tokens[tokens.length - 1]);
-            }
-            else
-            {
-                name = tokens[0];
-            }
-            setName(name);
-        }
-        
-        content = new byte[0];
-    }
+	public File(String nameWithExtension)
+	{
+		super(nameWithExtension);
+		
+		content = new byte[0];
+	}
 }
