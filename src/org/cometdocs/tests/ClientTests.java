@@ -281,7 +281,7 @@ public class ClientTests {
     }
 
     @Test
-    public void CanGetConversionTypes() throws Exception
+    public void canGetConversionTypes() throws Exception
     {
         ConversionType[] types = client.getConversionTypes();
 
